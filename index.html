@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>선린인터넷고 급식 정보</title>
+  <link rel="icon" href="https://teamlog.kr/public/img/TLicon.ico" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet" />
+  <style>
+    /* 기존 스타일 유지 */
+
+    body, html {
+      margin: 0; padding: 0;
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #fffaf0;
+      color: #3a8e4e;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 40px 20px 60px;
+      box-sizing: border-box;
+    }
+
+    .logo {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      width: 36px;
+      height: 36px;
+      background-image: url('https://teamlog.kr/public/img/TLicon.ico');
+      background-size: cover;
+      z-index: 1000;
+    }
+
+    h2 {
+      font-size: 2.2rem;
+      margin-bottom: 20px;
+      font-weight: 700;
+      text-align: center;
+      user-select: none;
+    }
+
+    .form-section {
+      margin-bottom: 30px;
+      text-align: center;
+      width: 320px;
+    }
+
+    label {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #3a8e4e;
+      display: block;
+      margin-bottom: 10px;
+      user-select: none;
+    }
+
+    input[type="date"] {
+      width: 100%;
+      padding: 12px 15px;
+      font-size: 1.1rem;
+      border: 2px solid #3a8e4e;
+      border-radius: 8px;
+      background: #fff;
+      color: #3a8e4e;
+      transition: border-color 0.3s;
+      box-sizing: border-box;
+    }
+
+    input[type="date"]:focus {
+      border-color: #2a5930;
+      outline: none;
+      box-shadow: 0 0 8px rgba(42, 89, 48, 0.5);
+    }
+
+    button {
+      margin-top: 18px;
+      width: 100%;
+      padding: 14px 0;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fffaf0;
+      background-color: #3a8e4e;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2a5930;
+    }
+
+    #result {
+      width: 320px;
+      min-height: 250px;
+      background-color: #e7f3e7;
+      border-radius: 14px;
+      padding: 30px 25px;
+      font-size: 1.2rem;
+      line-height: 1.7;
+      color: #2a5930;
+      white-space: pre-wrap;
+      box-shadow: 0 6px 18px rgba(58, 142, 78, 0.25);
+      user-select: text;
+      text-align: left;
+
+      opacity: 0;
+      transform: translateY(20px);
+      animation-fill-mode: forwards;
+    }
+
+    /* 애니메이션 키프레임 */
+    @keyframes fadeInUp {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* 애니메이션 활성화 클래스 */
+    #result.animate {
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    @media (max-width: 360px) {
+      body {
+        padding: 20px 10px 40px;
+      }
+      .form-section, #result {
+        width: 100%;
+        min-height: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="logo" title="TeamLog 아이콘"></div>
+
+  <h2>선린인터넷고등학교 오늘의 급식</h2>
+
+  <div class="form-section">
+    <label for="mealDate">날짜 선택</label>
+    <input type="date" id="mealDate" />
+    <button id="reloadBtn">급식 조회</button>
+  </div>
+
+  <div id="result">불러오는 중...</div>
+
+  <script>
+    function getTodayISO() {
+      const now = new Date();
+      return now.toISOString().slice(0, 10);
+    }
+
+    function formatDate(dateStr) {
+      return dateStr.replace(/-/g, '');
+    }
+
+    function animateResult() {
+      const result = document.getElementById('result');
+      result.classList.remove('animate');
+      void result.offsetWidth; // 리플로우 트리거해서 애니메이션 재실행
+      result.classList.add('animate');
+    }
+
+    function getMeal(dateStr) {
+      const officeCode = 'B10';
+      const schoolCode = '7010536';
+      const mealDate = formatDate(dateStr);
+      const apiKey = '6917fc004fae44e99a212f657b6920f9';
+
+      const url = `https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=${apiKey}&Type=json&ATPT_OFCDC_SC_CODE=${officeCode}&SD_SCHUL_CODE=${schoolCode}&MLSV_YMD=${mealDate}`;
+
+      const result = document.getElementById('result');
+      result.innerText = '불러오는 중...';
+      result.style.opacity = '1';
+
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          if (!data.mealServiceDietInfo || !data.mealServiceDietInfo[1] || !data.mealServiceDietInfo[1].row) {
+            result.innerText = '선택한 날짜에 급식 정보가 없습니다.';
+            animateResult();
+            return;
+          }
+
+          const meals = data.mealServiceDietInfo[1].row[0].DDISH_NM.replace(/<br\/>/g, '\n');
+          result.innerText = meals;
+          animateResult();
+        })
+        .catch(error => {
+          console.error(error);
+          result.innerText = '급식 정보를 불러오지 못했습니다.';
+          animateResult();
+        });
+    }
+
+    window.onload = function () {
+      const today = getTodayISO();
+      const dateInput = document.getElementById('mealDate');
+      dateInput.value = today;
+      getMeal(today);
+
+      dateInput.addEventListener('change', function () {
+        getMeal(this.value);
+      });
+
+      document.getElementById('reloadBtn').addEventListener('click', function () {
+        getMeal(dateInput.value);
+      });
+    };
+  </script>
+</body>
+</html>
