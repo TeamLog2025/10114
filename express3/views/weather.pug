@@ -1,0 +1,18 @@
+doctype html
+html(lang="ko")
+  head
+    meta(charset="utf-8")
+    title 날씨 정보
+  body
+    h1 오늘의 날씨
+    p 온도: #{weather.temp}°C
+    p 상태: #{weather.status}
+
+    if weather.temp >= 30
+      p 매우 더워요!
+    else if weather.temp >= 20
+      p 따뜻해요!
+    else if weather.temp >= 10
+      p 쌀쌀해요!
+    else
+      p 추워요!
