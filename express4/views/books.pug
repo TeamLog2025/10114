@@ -1,0 +1,12 @@
+doctype html
+html(lang="ko")
+  head
+    meta(charset="utf-8")
+    title 도서 목록
+  body
+    h1 도서 목록
+    ol
+      each book in books
+        li #{book.title} - #{book.author} (#{book.year})
+    br
+    button(onclick="location.href='/'") 돌아가기
