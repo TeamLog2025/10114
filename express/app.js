@@ -1,16 +1,14 @@
 const express = require('express');
-const path = require('path');
 const app = express();
+const PORT = 3000;
 
 app.set('view engine', 'pug');
-app.set('views', path.join(__dirname, 'views'));
-
+app.set('views', './views');
 
 app.get('/', (req, res) => {
-  res.render('index');
+    res.render('index');
 });
 
-const PORT = 3000;  
-app.listen(PORT, () => {
-  console.log(`서버가 http://localhost:${PORT} 에서 실행 중입니다`);
+app.listen(PORT, () => {    
+    console.log(`서버가 http://localhost:${PORT}에서 실행 중입니다`);
 });
