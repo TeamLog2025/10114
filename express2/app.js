@@ -8,7 +8,7 @@ app.set('views', path.join(__dirname, 'views'));
 
 
 
-app.get('/', (req, res) => {
+app.get('profile/', (req, res) => {
     res.render('profile', {name: '이승진', age: 17, job: '개발자'});
 });
 
